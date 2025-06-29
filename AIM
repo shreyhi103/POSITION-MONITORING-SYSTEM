@@ -1,0 +1,1 @@
+AIM : To design a system that monitors the orientation and position of an object using the MPU6050 sensor(accelerometer and gyroscope) and displays real-time pitch, roll, and yaw angles on an OLED screen using ESP32.
