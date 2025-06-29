@@ -1,0 +1,71 @@
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+#include <MPU6050_light.h>
+
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+
+// Create OLED and MPU6050 instances
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+MPU6050 mpu(Wire);
+
+unsigned long previousMillis = 0;
+
+void setup() {
+  Serial.begin(115200);
+
+  // Initialize I2C for ESP32
+  Wire.begin(21, 22);
+
+  // Initialize OLED
+  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+    Serial.println(F("OLED not found"));
+    while (1);
+  }
+
+  display.clearDisplay();
+  display.setTextColor(WHITE);
+  display.setTextSize(1);
+  display.setCursor(0, 0);
+  display.println("Initializing MPU6050...");
+  display.display();
+
+  // Initialize MPU6050
+  mpu.begin();
+  delay(1000);
+  mpu.calcGyroOffsets();
+
+  display.clearDisplay();
+  display.setCursor(0, 0);
+  display.println("MPU6050 Ready!");
+  display.display();
+  delay(1000);
+}
+
+void loop() {
+  mpu.update();
+
+  if (millis() - previousMillis >= 200) {
+    previousMillis = millis();
+
+    float pitch = mpu.getAngleX();
+    float roll  = mpu.getAngleY();
+    float yaw   = mpu.getAngleZ();
+
+    // Display on OLED
+    display.clearDisplay();
+    display.setTextSize(1);
+    display.setCursor(0, 0);
+    display.println("MPU6050 Angles:");
+    display.print("Pitch: "); display.println(pitch, 1);
+    display.print("Roll : "); display.println(roll, 1);
+    display.print("Yaw  : "); display.println(yaw, 1);
+    display.display();
+
+    // Output to Serial Monitor
+    Serial.print("Pitch: "); Serial.print(pitch, 1);
+    Serial.print(" | Roll: "); Serial.print(roll, 1);
+    Serial.print(" | Yaw: "); Serial.println(yaw, 1);
+  }
+}
